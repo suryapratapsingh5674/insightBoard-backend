@@ -51,14 +51,15 @@ export const verifyAccessToken = (token) => {
  */
 export const getRefreshTokenCookieOptions = () => ({
   httpOnly: true, // Prevents JavaScript from reading the cookie (protects against XSS)
-  secure: config.nodeEnv === 'production', // Use HTTPS in production
-  sameSite: 'lax', // Protects against CSRF while allowing standard navigation
+  secure: config.nodeEnv === 'production', // Must be true in production for HTTPS
+  sameSite: config.nodeEnv === 'production' ? 'none' : 'lax', // 'none' allows cross-domain cookies between Vercel and Render
   maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
 });
 
 export const getClearCookieOptions = () => ({
   httpOnly: true,
   secure: config.nodeEnv === 'production',
-  sameSite: 'lax',
+  sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
 });
+
 

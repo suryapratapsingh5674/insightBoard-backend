@@ -27,10 +27,24 @@ const generalLimiter = rateLimit({
 });
 app.use('/api', generalLimiter);
 
-// 2. CORS configuration
+// 2. CORS configuration: supports exact client URL (with or without trailing slash) and Vercel domains
+const allowedOrigins = [
+  config.clientUrl ? config.clientUrl.replace(/\/$/, '') : '',
+  'http://localhost:5173',
+  'https://insight-board-frontend-olive.vercel.app',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server proxies)
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (allowedOrigins.includes(cleanOrigin) || cleanOrigin.endsWith('.vercel.app')) {
+        return callback(null, cleanOrigin);
+      }
+      return callback(null, origin);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
